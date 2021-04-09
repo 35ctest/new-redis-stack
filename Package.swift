@@ -27,6 +27,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-metrics.git", "1.0.0" ..< "3.0.0"),
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.18.0"),
         .package(url: "https://github.com/apple/swift-service-discovery", from: "1.0.0"),
+        .package(url: "https://github.com/apple/swift-distributed-tracing-baggage", from: "0.1.0"),
     ],
     targets: [
         .target(
@@ -35,6 +36,7 @@ let package = Package(
                 .product(name: "NIO", package: "swift-nio"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Metrics", package: "swift-metrics"),
+                .product(name: "Baggage", package: "swift-distributed-tracing-baggage"),
                 .product(name: "ServiceDiscovery", package: "swift-service-discovery")
             ]
         ),
