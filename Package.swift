@@ -20,7 +20,7 @@ let package = Package(
     products: [
         .library(name: "RediStack", targets: ["RediStack"]),
         .library(name: "RediStackTestUtils", targets: ["RediStackTestUtils"]),
-        .library(name: "RedisTypes", targets: ["RedisTypes"])
+        //.library(name: "RedisTypes", targets: ["RedisTypes"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-log.git", from: "1.0.0"),
@@ -47,14 +47,14 @@ let package = Package(
             ]
         ),
 
-        .target(name: "RedisTypes", dependencies: ["RediStack"]),
-        .testTarget(
-            name: "RedisTypesTests",
-            dependencies: [
-                "RediStack", "RedisTypes", "RediStackTestUtils",
-                .product(name: "NIO", package: "swift-nio")
-            ]
-        ),
+//        .target(name: "RedisTypes", dependencies: ["RediStack"]),
+//        .testTarget(
+//            name: "RedisTypesTests",
+//            dependencies: [
+//                "RediStack", "RedisTypes", "RediStackTestUtils",
+//                .product(name: "NIO", package: "swift-nio")
+//            ]
+//        ),
 
         .target(
             name: "RediStackTestUtils",
