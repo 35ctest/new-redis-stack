@@ -178,6 +178,96 @@ extension RedisClient {
     }
 }
 
+// MARK: Async/Await Support
+
+#if compiler(>=5.5) && canImport(_Concurrency)
+
+extension RedisClient {
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func send<CommandResult>(_ command: RedisCommand<CommandResult>) async throws -> CommandResult {
+        return try await self.send(command).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func subscribe(
+        to channels: [RedisChannelName],
+        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
+        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler? = nil,
+        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler? = nil
+    ) async throws {
+        try await self
+            .subscribe(to: channels, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+            .get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func subscribe(
+        to channels: RedisChannelName...,
+        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
+        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler? = nil,
+        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler? = nil
+    ) async throws {
+        try await self
+            .subscribe(to: channels, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+            .get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func psubscribe(
+        to patterns: [String],
+        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
+        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler? = nil,
+        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler? = nil
+    ) async throws {
+        try await self
+            .psubscribe(to: patterns, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+            .get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func psubscribe(
+        to patterns: String...,
+        messageReceiver receiver: @escaping RedisSubscriptionMessageReceiver,
+        onSubscribe subscribeHandler: RedisSubscriptionChangeHandler? = nil,
+        onUnsubscribe unsubscribeHandler: RedisSubscriptionChangeHandler? = nil
+    ) async throws {
+        try await self
+            .psubscribe(to: patterns, messageReceiver: receiver, onSubscribe: subscribeHandler, onUnsubscribe: unsubscribeHandler)
+            .get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func unsubscribe(from channels: RedisChannelName...) async throws {
+        try await self.unsubscribe(from: channels).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func punsubscribe(from patterns: String...) async throws {
+        try await self.punsubscribe(from: patterns)
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func unsubscribe() async throws {
+        try await self.unsubscribe(from: []).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func punsubscribe() async throws {
+        try await self.punsubscribe(from: []).get()
+    }
+}
+
+#endif
+
 // MARK: Errors
 
 /// When working with `RedisClient`, runtime errors can be thrown to indicate problems with connection state, decoding assertions, or otherwise.
