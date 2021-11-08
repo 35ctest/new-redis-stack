@@ -589,3 +589,17 @@ extension RedisConnectionPoolSize {
         }
     }
 }
+
+// MARK: Async/Await Support
+
+#if compiler(>=5.5) && canImport(_Concurrency)
+
+extension RedisConnectionPool {
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func leaseConnection<T>(_ operation: @escaping @Sendable (RedisConnection) async throws -> T) async rethrows T {
+        #error("TODO")
+    }
+}
+
+#endif
