@@ -250,6 +250,26 @@ extension RedisClient {
     }
 }
 
+
+// MARK: Async/Await Support
+
+#if compiler(>=5.5) && canImport(_Concurrency)
+
+extension RedisClient {
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func scanHashFields(
+        in key: RedisKey,
+        startingFrom position: Int = 0,
+        matching match: String? = nil,
+        count: Int? = nil
+    ) async throws -> (Int, [RedisHashFieldKey: RESPValue]) {
+        return try await self.scanHashFields(in: key, startingFrom: position, matching: match, count: count).get()
+    }
+}
+
+#endif
+
 // MARK: -
 
 /// A representation of a Redis hash field key.

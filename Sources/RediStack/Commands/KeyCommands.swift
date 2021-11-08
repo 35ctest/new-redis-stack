@@ -131,3 +131,41 @@ extension RedisClient {
         return self.send(.scan(startingFrom: position, matching: match, count: count))
     }
 }
+
+// MARK: Async/Await Support
+
+#if compiler(>=5.5) && canImport(_Concurrency)
+
+extension RedisClient {
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    @discardableResult
+    public func delete(_ keys: RedisKey...) async throws -> Int {
+        return try await self.delete(keys).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    @discardableResult
+    public func delete(_ keys: [RedisKey]) async throws -> Int {
+        return try await self.delete(keys).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func expire(_ key: RedisKey, after timeout: TimeAmount) async throws -> Bool {
+        return try await self.expire(key, after: timeout).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func scanKeys(
+        startingFrom position: Int = 0,
+        matching match: String? = nil,
+        count: Int? = nil
+    ) async throws -> (Int, [RedisKey]) {
+        return try await self.scanKeys(startingFrom: position, matching: match, count: count).get()
+    }
+}
+
+#endif

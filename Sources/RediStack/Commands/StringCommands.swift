@@ -359,6 +359,80 @@ extension RedisClient {
     }
 }
 
+// MARK: Async/Await Support
+
+#if compiler(>=5.5) && canImport(_Concurrency)
+
+extension RedisClient {
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func get(_ key: RedisKey) async throws -> RESPValue? {
+        return try await self.get(key).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func get<Value: RESPValueConvertible>(
+        _ key: RedisKey,
+        as type: Value.Type = Value.self
+    ) async throws -> Value? {
+        return try await self.get(key, as: type).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func get<D: Decodable>(
+        _ key: RedisKey,
+        asJSON type: D.Type = D.self,
+        decoder: JSONDecoder = .init()
+    ) async throws -> D? {
+        return try await self.get(key, asJSON: type, decoder: decoder).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func set<Value: RESPValueConvertible>(_ key: RedisKey, to value: Value) async throws {
+        return try await self.set(key: to: value).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func set<Value: RESPValueConvertible>(
+        _ key: RedisKey,
+        to value: Value,
+        onCondition condition: RedisSetCommandCondition,
+        expiration: RedisSetCommandExpiration? = nil
+    ) async throws -> RedisSetCommandResult {
+        return try await self.set(key: to: value, onCondition: condition, expiration: expiration).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func set<E: Encodable>(
+        _ key: RedisKey,
+        toJSON value: E,
+        encoder: JSONEncoder = .init()
+    ) async throws {
+        try await self.set(key, toJSON: value, encoder: encoder).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func set<E: Encodable>(
+        _ key: RedisKey,
+        toJSON value: E,
+        onCondition condition: RedisSetCommandCondition,
+        expiration: RedisSetCommandExpiration? = nil,
+        encoder: JSONEncoder = .init()
+    ) async throws -> RedisSetCommandResult {
+        return try await self
+            .set(key, toJSON: value, onCondition: condition, expiration: expiration, encoder: encoder)
+            .get()
+    }
+}
+
+#endif
+
 // MARK: -
 
 /// A condition which must hold true in order for a key to be set with the `SET` command.

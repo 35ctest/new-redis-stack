@@ -86,3 +86,30 @@ extension RedisClient {
         return self.send(.select(database: index))
     }
 }
+
+// MARK: Async/Await Support
+
+#if compiler(>=5.5) && canImport(_Concurrency)
+
+extension RedisClient {
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    @discardableResult
+    public func ping(with message: String? = nil) async throws String {
+        return try await self.ping(with: message).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func authorize(with password: String) async throws {
+        return try await self.authorize(with: password).get()
+    }
+
+    @available(macOS 12, iOS 15, tvOS 15, watchOS 8, *)
+    @inlinable
+    public func select(database index: Int) async throws {
+        return self.select(database: index).get()
+    }
+}
+
+#endif
