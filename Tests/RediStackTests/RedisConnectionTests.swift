@@ -26,7 +26,10 @@ extension RedisConnectionTests {
     func test_connectionUnexpectedlyCloses_invokesCallback() throws {
         let loop = EmbeddedEventLoop()
 
-        let expectedClosureConnection = RedisConnection(configuredRESPChannel: EmbeddedChannel(loop: loop), context: Logger(label: ""))
+        let expectedClosureConnection = RedisConnection(
+            configuredRESPChannel: EmbeddedChannel(loop: loop),
+            defaultLogger: Logger(label: "")
+        )
         let expectedClosureExpectation = self.expectation(description: "this should not be fulfilled")
         expectedClosureExpectation.isInverted = true
 
@@ -34,7 +37,10 @@ extension RedisConnectionTests {
         _ = expectedClosureConnection.close(logger: nil)
 
         let channel = EmbeddedChannel(loop: loop)
-        let notExpectedClosureConnection = RedisConnection(configuredRESPChannel: channel, context: Logger(label: ""))
+        let notExpectedClosureConnection = RedisConnection(
+            configuredRESPChannel: channel,
+            defaultLogger: Logger(label: "")
+        )
         let notExpectedClosureExpectation = self.expectation(description: "this should be fulfilled")
         notExpectedClosureConnection.onUnexpectedClosure = { notExpectedClosureExpectation.fulfill() }
 

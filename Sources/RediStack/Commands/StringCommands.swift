@@ -2,7 +2,7 @@
 //
 // This source file is part of the RediStack open source project
 //
-// Copyright (c) 2019-2020 RediStack project authors
+// Copyright (c) 2019-2021 RediStack project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import struct Logging.Logger
 import Foundation
 import NIO
 
@@ -230,10 +231,17 @@ extension RedisClient {
     /// Gets the value of the given key.
     ///
     /// See `RedisCommand.get(_:)`
-    /// - Parameter key: The key to fetch the value from.
+    /// - Parameters:
+    ///     - key: The key to fetch the value from.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A `NIO.EventLoopFuture` that resolves the value stored at the given key, otherwise `nil`.
-    public func get(_ key: RedisKey) -> EventLoopFuture<RESPValue?> {
-        return self.send(.get(key))
+    public func get(
+        _ key: RedisKey,
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
+    ) -> EventLoopFuture<RESPValue?> {
+        return self.send(.get(key), eventLoop: eventLoop, logger: logger)
     }
 
     /// Gets the value of the given key, converting it to the desired type.
@@ -281,10 +289,17 @@ extension RedisClient {
     /// - Parameters:
     ///     - key: The key to use to uniquely identify this value in Redis.
     ///     - value: The value to set the `key` to.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A `NIO.EventLoopFuture` that resolves if the operation was successful.
     @inlinable
-    public func set<Value: RESPValueConvertible>(_ key: RedisKey, to value: Value) -> EventLoopFuture<Void> {
-        return self.send(.set(key, to: value))
+    public func set<Value: RESPValueConvertible>(
+        _ key: RedisKey,
+        to value: Value,
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
+    ) -> EventLoopFuture<Void> {
+        return self.send(.set(key, to: value), eventLoop: eventLoop, logger: logger)
     }
 
     /// Sets the value stored at the given key with options to control how to set it.
@@ -296,6 +311,8 @@ extension RedisClient {
     ///     - value: The value to set the `key` to.
     ///     - condition: The condition under which the `key` should be set.
     ///     - expiration: The expiration to set on the `key` when setting the value. If `nil`, no expiration will be set.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A `NIO.EventLoopFuture` indicating the result of the operation; `.ok` if successful and `.conditionNotMet` if the given `condition` was not meth.
     ///
     ///     If the condition `.none` was used, then the result value will always be `.ok`.
@@ -304,9 +321,11 @@ extension RedisClient {
         _ key: RedisKey,
         to value: Value,
         onCondition condition: RedisSetCommandCondition,
-        expiration: RedisSetCommandExpiration? = nil
+        expiration: RedisSetCommandExpiration? = nil,
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
     ) -> EventLoopFuture<RedisSetCommandResult> {
-        return self.send(.set(key, to: value, onCondition: condition, expiration: expiration))
+        return self.send(.set(key, to: value, onCondition: condition, expiration: expiration), eventLoop: eventLoop, logger: logger)
     }
 
     /// Sets the value stored at the given key to the given value as JSON data.
@@ -340,6 +359,8 @@ extension RedisClient {
     ///     - value: The value to convert to JSON data set the `key` to.
     ///     - condition: The condition under which the `key` should be set.
     ///     - expiration: The expiration to set on the `key` when setting the value. If `nil`, no expiration will be set.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A `NIO.EventLoopFuture` indicating the result of the operation; `.ok` if successful and `.conditionNotMet` if the given `condition` was not meth.
     ///
     ///     If the condition `.none` was used, then the result value will always be `.ok`.
@@ -349,10 +370,12 @@ extension RedisClient {
         toJSON value: E,
         onCondition condition: RedisSetCommandCondition,
         expiration: RedisSetCommandExpiration? = nil,
-        encoder: JSONEncoder = .init()
+        encoder: JSONEncoder = .init(),
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
     ) -> EventLoopFuture<RedisSetCommandResult> {
         do {
-            return try self.send(.set(key, to: encoder.encode(value), onCondition: condition, expiration: expiration))
+            return try self.send(.set(key, to: encoder.encode(value), onCondition: condition, expiration: expiration), eventLoop: eventLoop, logger: logger)
         } catch {
             return self.eventLoop.makeFailedFuture(error)
         }

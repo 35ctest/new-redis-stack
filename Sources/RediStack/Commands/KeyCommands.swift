@@ -2,7 +2,7 @@
 //
 // This source file is part of the RediStack open source project
 //
-// Copyright (c) 2020 RediStack project authors
+// Copyright (c) 2020-2021 RediStack project authors
 // Licensed under Apache License v2.0
 //
 // See LICENSE.txt for license information
@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import struct Logging.Logger
 import NIO
 
 // MARK: Key
@@ -88,20 +89,34 @@ extension RedisClient {
     /// Deletes the given keys. Any key that does not exist is ignored.
     ///
     /// See `RedisCommand.del(keys:)`
-    /// - Parameter keys: The list of keys to delete from the database.
+    /// - Parameters:
+    ///     - keys: The list of keys to delete from the database.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A `NIO.EventLoopFuture` that resolves the number of keys that were deleted from the database.
-    public func delete(_ keys: RedisKey...) -> EventLoopFuture<Int> {
-        return self.delete(keys)
+    public func delete(
+        _ keys: RedisKey...,
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
+    ) -> EventLoopFuture<Int> {
+        return self.delete(keys, eventLoop: eventLoop, logger: logger)
     }
 
     /// Deletes the given keys. Any key that does not exist is ignored.
     ///
     /// See `RedisCommand.del(keys:)`
-    /// - Parameter keys: The list of keys to delete from the database.
+    /// - Parameters:
+    ///     - keys: The list of keys to delete from the database.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A `NIO.EventLoopFuture` that resolves the number of keys that were deleted from the database.
-    public func delete(_ keys: [RedisKey]) -> EventLoopFuture<Int> {
+    public func delete(
+        _ keys: [RedisKey],
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
+    ) -> EventLoopFuture<Int> {
         guard keys.count > 0 else { return self.eventLoop.makeSucceededFuture(0) }
-        return self.send(.del(keys))
+        return self.send(.del(keys), eventLoop: eventLoop, logger: logger)
     }
 
     /// Sets a timeout on key. After the timeout has expired, the key will automatically be deleted.
@@ -110,9 +125,16 @@ extension RedisClient {
     /// - Parameters:
     ///     - key: The key to set the expiration on.
     ///     - timeout: The time from now the key will expire at.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A `NIO.EventLoopFuture` that resolves `true` if the expiration was set and `false` if it wasn't.
-    public func expire(_ key: RedisKey, after timeout: TimeAmount) -> EventLoopFuture<Bool> {
-        return self.send(.expire(key, after: timeout))
+    public func expire(
+        _ key: RedisKey,
+        after timeout: TimeAmount,
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
+    ) -> EventLoopFuture<Bool> {
+        return self.send(.expire(key, after: timeout), eventLoop: eventLoop, logger: logger)
     }
 
     /// Incrementally iterates over all keys in the currently selected database.
@@ -122,12 +144,16 @@ extension RedisClient {
     ///     - position: The cursor position to start from.
     ///     - match: A glob-style pattern to filter values to be selected from the result set.
     ///     - count: The number of elements to advance by. Redis default is 10.
+    ///     - eventLoop: An optional event loop to hop to for any further chaining on the returned event loop future.
+    ///     - logger: An optional logger instance to use for logs generated from this command.
     /// - Returns: A cursor position for additional invocations with a limited collection of keys found in the database.
     public func scanKeys(
         startingFrom position: Int = 0,
         matching match: String? = nil,
-        count: Int? = nil
+        count: Int? = nil,
+        eventLoop: EventLoop? = nil,
+        logger: Logger? = nil
     ) -> EventLoopFuture<(Int, [RedisKey])> {
-        return self.send(.scan(startingFrom: position, matching: match, count: count))
+        return self.send(.scan(startingFrom: position, matching: match, count: count), eventLoop: eventLoop, logger: logger)
     }
 }

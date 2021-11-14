@@ -12,6 +12,7 @@
 //
 //===----------------------------------------------------------------------===//
 
+import NIO
 @testable import RediStack
 import RediStackTestUtils
 import XCTest
@@ -79,5 +80,55 @@ extension RedisConnectionTests {
         connection.allowSubscriptions = false
 
         self.waitForExpectations(timeout: 1)
+    }
+}
+
+// MARK: EventLoop Hopping
+extension RedisConnectionTests {
+    func testCommandHopsEventLoop() throws {
+        let eventLoop = MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
+
+        try self.connection.ping(eventLoop: eventLoop)
+            .map { _ in eventLoop.assertInEventLoop() }
+            .wait()
+    }
+
+    func testSubscribeHopsEventLoop() throws {
+        let eventLoop = MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
+        defer {
+            try! self.connection
+                .unsubscribe(from: #function, eventLoop: eventLoop)
+                .map { _ in eventLoop.assertInEventLoop() }
+                .wait()
+        }
+
+        try self.connection
+            .subscribe(to: #function, eventLoop: eventLoop) { _, _ in }
+            .map { _ in eventLoop.assertInEventLoop() }
+            .wait()
+    }
+
+    func testPSubscribeHopsEventLoop() throws {
+        let eventLoop = MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
+        defer {
+            try! self.connection
+                .punsubscribe(from: #function, eventLoop: eventLoop)
+                .map { _ in eventLoop.assertInEventLoop() }
+                .wait()
+        }
+
+        try self.connection
+            .psubscribe(to: #function, eventLoop: eventLoop) { _, _ in }
+            .map { _ in eventLoop.assertInEventLoop() }
+            .wait()
+    }
+
+    func testCloseHopsEventLoop() throws {
+        let eventLoop = MultiThreadedEventLoopGroup(numberOfThreads: 1).next()
+
+        try self.connection
+            .close(eventLoop: eventLoop)
+            .map { eventLoop.assertInEventLoop() }
+            .wait()
     }
 }

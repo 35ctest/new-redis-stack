@@ -36,7 +36,7 @@ final class ConnectionPoolTests: XCTestCase {
         let channel = self.server.createConnectedChannel()
 
         // Wrap it
-        return RedisConnection(configuredRESPChannel: channel, context: .redisBaseConnectionLogger)
+        return RedisConnection(configuredRESPChannel: channel, defaultLogger: .redisBaseConnectionLogger)
     }
 
     func createPool(maximumConnectionCount: Int, minimumConnectionCount: Int, leaky: Bool) -> ConnectionPool {
@@ -45,7 +45,7 @@ final class ConnectionPoolTests: XCTestCase {
             minimumConnectionCount: minimumConnectionCount,
             leaky: leaky,
             loop: self.server.loop,
-            systemContext: .redisBaseConnectionPoolLogger
+            poolLogger: .redisBaseConnectionPoolLogger
         ) { loop in
             return loop.makeSucceededFuture(self.createAConnection())
         }
@@ -57,7 +57,7 @@ final class ConnectionPoolTests: XCTestCase {
             minimumConnectionCount: minimumConnectionCount,
             leaky: leaky,
             loop: self.server.loop,
-            systemContext: .redisBaseConnectionPoolLogger,
+            poolLogger: .redisBaseConnectionPoolLogger,
             connectionFactory: connectionFactory
         )
     }
